@@ -23,6 +23,11 @@ __settings__ = xbmcaddon.Addon(__addonID__)
 AUTOEXEC_PATH = xbmc.translatePath("special://home/userdata/autoexec.py")
 AUTOEXEC_SCRIPT = "import time;time.sleep(5);xbmc.executebuiltin('XBMC.RunScript(special://home/addons/script.filecleaner/default.py,-startup)')"
 
+#--vikjon0 mod-------------------------------------
+addon = xbmcaddon.Addon(id = __addonID__)
+addonPath = addon.getAddonInfo('path')
+addonUserdata = xbmc.translatePath(addon.getAddonInfo('profile'))
+
 class Main:
     
     def __init__(self):
@@ -84,19 +89,18 @@ class Main:
                     for file, path, show, season, idFile in episodes:
                         if os.path.exists(path):
                             cleaningRequired = True
-                        if self.holdingEnabled:
-                            if self.createSubdirectories:
-                                newpath = os.path.join(self.holdingFolder, show, "Season " + season)
-                                self.create_subdirectories(newpath)
+                            if self.holdingEnabled:
+                                if self.createSubdirectories:
+                                    newpath = os.path.join(self.holdingFolder, show, "Season " + season)
+                                    self.create_subdirectories(newpath)
+                                else:
+                                    newpath = self.holdingFolder
+                                self.debug("Moving episode %s from %s to %s" % (os.path.basename(file), os.path.dirname(file), newpath))
+                                moveOk = self.move_file(path, newpath)
+                                if self.updatePaths and moveOk:
+                                    self.update_path_reference(idFile, newpath)
                             else:
-                                newpath = self.holdingFolder
-                            self.debug("Moving episode %s from %s to %s" % (os.path.basename(file), os.path.dirname(file), newpath))
-                            moveOk = self.move_file(path, newpath)
-                            if self.updatePaths and moveOk:
-                                self.update_path_reference(idFile, newpath)
-                        else:
-                            self.delete_file(path)
-            
+                                self.delete_file(path)
             # Finally clean the library to account for any deleted videos.
             if self.cleanLibrary and cleaningRequired:
                 # Wait 10 seconds for deletions to finish before cleaning.
@@ -157,6 +161,15 @@ class Main:
         
         query += " AND playCount > 0"
         
+        #--vikjon0 mod-----------------------------------------------------------------
+        if option is "episode":
+            if self.tv_default == 'delete':
+                query += ' AND tvshowlinkepisode.idShow not in (select idShow from addon.tvshowsettings  where autoDelete = 0)'
+            else:
+                pass
+                #query += ' AND tvshowlinkepisode.idShow in (select idShow from addon.tvshowsettings  where autoDelete = 1)'
+        #--vikjon0 mod-end-----------------------------------------------------------------
+        
         if self.deleteOnlyLowRated:
             column = "c05" if option is "movie" else "c03"
             query += " AND %s.%s BETWEEN %f AND %f" % (option, column, (margin if self.ignoreNoRating else 0), self.minimumRating - margin)
@@ -171,11 +184,21 @@ class Main:
                     con = sqlite3.connect(xbmc.translatePath("special://database/" + database))
                     cur = con.cursor()
                     
+                    #--vikjon0 mod-----------------------------------------------------------------
+                    mod_sql = "attach database '" + addonUserdata + "addon.db' as addon"
+                    cur.execute(mod_sql)
+                    
+                    mod_sql = "create table if not exists addon.tvshowsettings (idShow integer primary key, description text, autoDelete integer)"
+                    #autoDelete  0,1,2 = No, Yes, default (not in table = default)
+                    cur.execute(mod_sql)
+  
+                    #--mod-end-----------------------------------------------------------------
+   
                     self.debug("Executing query on %s: %s" % (database, query))
                     cur.execute(query)
-                    
+                    self.debug("3")
                     # Append the results to the list of files to delete.
-                    #results += cur.fetchall()
+                    results += cur.fetchall()
             
             return results
         except OSError, e:
@@ -276,6 +299,10 @@ class Main:
         self.updatePaths = bool(xbmc.translatePath(__settings__.getSetting("update_path_reference")) == "true")
         
         self.removeFromAutoExec = bool(xbmc.translatePath(__settings__.getSetting("remove_from_autoexec")) != "false")
+    
+        #--vikjon0 mod---------
+        self.tv_default = __settings__.getSetting('tv_default')
+    
     
     def get_free_disk_space(self, path):
         """

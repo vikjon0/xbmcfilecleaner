@@ -18,7 +18,9 @@
     <string id="31008">Delete movies</string>
     <string id="31009">Delete TV shows</string>
     
-    
+    <string id="31020">[I]Be careful this is a test version! [/I]</string>
+ 	<string id="31021">Default for TV shows (Careful!)</string>
+     
     <!-- Conditions -->
     <string id="32001">[B]This section specifies the conditions that must be met before any files are deleted[/B]</string>
     <string id="32002">Only delete a video after a certain number of days after watching</string>

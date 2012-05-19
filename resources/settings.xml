@@ -3,6 +3,7 @@
     <category label="31000" id="section_general">
         <setting type="sep" />
         <setting label="31001" type="lsep" />
+        <setting label="31020" type="lsep" />
         <setting type="sep" />
         
         <setting id="service_enabled" type="bool" label="31002" default="false"/>
@@ -16,8 +17,9 @@
         <setting id="clean_library" type="bool" label="31007" default="true" visible="eq(-5,true)" />
         <setting id="delete_movies" type="bool" label="31008" default="false" visible="eq(-6,true)" />
         <setting id="delete_tvshows" type="bool" label="31009" default="false" visible="eq(-7,true)" />
-        
+		<setting id="tv_default" type="labelenum" label="31021" values="delete|keep" default="keep" visible="eq(-1,true) + eq(-8,true)" />        
         <setting id="remove_from_autoexec" type="bool" label="" default="true" visible="false" />
+		
     </category>
     
     <!-- Conditions Section -->
@@ -38,9 +40,9 @@
         <setting id="low_disk_path" type="folder" label="32009" subsetting="true" default="special://home" visible="eq(-2,true)" />
         
         <setting id="enable_holding" type="bool" label="32010" default="false" />
-        <setting id="holding_folder" type="folder" label="32011" subsetting="true" default="special://temp" visible="eq(-1,true)" />
+        <setting id="holding_folder" type="folder" label="32011" subsetting="true" default="special://" visible="eq(-1,true)" />
         <setting id="create_series_season_dirs" type="bool" label="32012" subsetting="true" default="false" visible="eq(-2,true)" />
-        <setting id="update_path_reference" type="bool" label="32013" subsetting="true" default="true" visible="eq(-3,true)" />
+        <setting id="update_path_reference" type="bool" label="32013" subsetting="true" default="false" visible="eq(-3,true)" />
         <setting id="holding_info" label="32014" type="lsep" subsetting="true" />
     </category>
     
